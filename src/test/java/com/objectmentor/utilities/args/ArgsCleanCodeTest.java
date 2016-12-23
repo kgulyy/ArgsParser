@@ -4,12 +4,14 @@ import com.objectmentor.utilities.args.exception.ArgsException;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Created by KGuly on 22.12.2016.
+ * Created by KGuly on 23.12.2016.
  */
-public class ArgsImplTest {
+public class ArgsCleanCodeTest {
     private static final String TEST_STRING = "TestString";
     private static final int TEST_INT = 124;
 
@@ -20,7 +22,7 @@ public class ArgsImplTest {
 
         String errorMessage = "";
         try {
-            new ArgsImpl(schema, arguments);
+            new ArgsCleanCode(schema, arguments);
         } catch (ArgsException e) {
             errorMessage = e.getMessage();
         }
@@ -33,7 +35,7 @@ public class ArgsImplTest {
         String schema = "1";
         String[] arguments = {"-1"};
 
-        new ArgsImpl(schema, arguments);
+        new ArgsCleanCode(schema, arguments);
     }
 
     @Test(expected = ArgsException.class)
@@ -41,7 +43,7 @@ public class ArgsImplTest {
         String schema = "a@";
         String[] arguments = {"-a@"};
 
-        new ArgsImpl(schema, arguments);
+        new ArgsCleanCode(schema, arguments);
     }
 
     @Test(expected = ArgsException.class)
@@ -49,14 +51,14 @@ public class ArgsImplTest {
         String schema = "a";
         String[] arguments = {"-b"};
 
-        new ArgsImpl(schema, arguments);
+        new ArgsCleanCode(schema, arguments);
     }
 
     @Test
     public void constructor_Positive_ValueBeforeArgument() throws ArgsException {
         String schema = "i#";
         String[] arguments = {TEST_STRING, "-i", String.valueOf(TEST_INT)};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         int argI = args.getInt('i');
 
@@ -67,7 +69,7 @@ public class ArgsImplTest {
     public void has_Positive_TrueReturned() throws ArgsException {
         String schema = "t";
         String[] arguments = {"-t"};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         boolean hasArg = args.has('t');
 
@@ -78,7 +80,7 @@ public class ArgsImplTest {
     public void has_Positive_FalseReturned() throws ArgsException {
         String schema = "f";
         String[] arguments = {};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         boolean hasArg = args.has('f');
 
@@ -89,7 +91,7 @@ public class ArgsImplTest {
     public void getBoolean_Positive_TrueReturned() throws ArgsException {
         String schema = "t";
         String[] arguments = {"-t"};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         boolean argT = args.getBoolean('t');
 
@@ -100,7 +102,7 @@ public class ArgsImplTest {
     public void getBoolean_Positive_FalseReturned() throws ArgsException {
         String schema = "f";
         String[] arguments = {};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         boolean argF = args.getBoolean('f');
 
@@ -111,7 +113,7 @@ public class ArgsImplTest {
     public void getBoolean_Positive_MultipleArgs() throws ArgsException {
         String schema = "a,b,c,d";
         String[] arguments = {"-db"};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         boolean argA = args.getBoolean('a');
         boolean argB = args.getBoolean('b');
@@ -128,7 +130,7 @@ public class ArgsImplTest {
     public void getString_Negative_MissingString() throws ArgsException {
         String schema = "s*";
         String[] arguments = {"-s"};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         args.getString('s');
     }
@@ -137,7 +139,7 @@ public class ArgsImplTest {
     public void getString_Positive_TestStringReturned() throws ArgsException {
         String schema = "s*";
         String[] arguments = {"-s", TEST_STRING};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         String argS = args.getString('s');
 
@@ -150,7 +152,7 @@ public class ArgsImplTest {
         final String testArgA = "TestArgA";
         final String testArgB = "TestArgB";
         String[] arguments = {"-ba", testArgB, testArgA};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         String argA = args.getString('a');
         String argB = args.getString('b');
@@ -165,7 +167,7 @@ public class ArgsImplTest {
     public void getInt_Negative_MissingInteger() throws ArgsException {
         String schema = "i#";
         String[] arguments = {"-i"};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         args.getInt('i');
     }
@@ -174,7 +176,7 @@ public class ArgsImplTest {
     public void getInt_Negative_InvalidInteger() throws ArgsException {
         String schema = "i#";
         String[] arguments = {"-i", TEST_STRING};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         args.getInt('i');
     }
@@ -183,7 +185,7 @@ public class ArgsImplTest {
     public void getInt_Positive_TestIntReturned() throws ArgsException {
         String schema = "i#";
         String[] arguments = {"-i", String.valueOf(TEST_INT)};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         int argI = args.getInt('i');
 
@@ -196,7 +198,7 @@ public class ArgsImplTest {
         final int testArgA = 158;
         final int testArgC = 84;
         String[] arguments = {"-ac", String.valueOf(testArgA), String.valueOf(testArgC)};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         int argA = args.getInt('a');
         int argB = args.getInt('b');
@@ -212,7 +214,7 @@ public class ArgsImplTest {
         String schema = "a,b*,c#,d,e*,f#";
         String[] arguments = {"-cab", String.valueOf(TEST_INT), TEST_STRING,
                 "-e", TEST_STRING, "-f", String.valueOf(TEST_INT)};
-        Args args = new ArgsImpl(schema, arguments);
+        Args args = new ArgsCleanCode(schema, arguments);
 
         boolean argA = args.getBoolean('a');
         String argB = args.getString('b');

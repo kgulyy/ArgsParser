@@ -52,9 +52,6 @@ public class ArgsImpl implements Args {
             String argString = currentArgument.next();
             if (argString.startsWith("-")) {
                 parseArgumentCharacters(argString.substring(1));
-            } else {
-                currentArgument.previous();
-                break;
             }
         }
     }
