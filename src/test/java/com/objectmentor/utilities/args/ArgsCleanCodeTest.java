@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 public class ArgsCleanCodeTest {
     private static final String TEST_STRING = "TestString";
     private static final int TEST_INT = 124;
+    private static final double TEST_DOUBLE= 75.45;
 
     @SuppressWarnings("unused")
     public void test_negative_pattern() {
@@ -229,5 +230,34 @@ public class ArgsCleanCodeTest {
         assertThat(argD, is(false));
         assertThat(argE, is(TEST_STRING));
         assertThat(argF, is(TEST_INT));
+    }
+
+    @Test(expected = ArgsException.class)
+    public void getDouble_Negative_MissingDouble() throws ArgsException {
+        String schema = "x##";
+        String[] arguments = {"-x"};
+        Args args = new ArgsCleanCode(schema, arguments);
+
+        args.getDouble('x');
+    }
+
+    @Test(expected = ArgsException.class)
+    public void getDouble_Negative_InvalidDouble() throws ArgsException {
+        String schema = "d##";
+        String[] arguments = {"-d", TEST_STRING};
+        Args args = new ArgsCleanCode(schema, arguments);
+
+        args.getDouble('d');
+    }
+
+    @Test
+    public void getDouble_Positive_TestNumberReturned() throws ArgsException {
+        String schema = "d##";
+        String[] arguments = {"-d", String.valueOf(TEST_DOUBLE)};
+        Args args = new ArgsCleanCode(schema, arguments);
+
+        double argD = args.getDouble('d');
+
+        assertThat(TEST_DOUBLE, is(argD));
     }
 }

@@ -100,4 +100,9 @@ public class ArgsImpl implements Args {
     public int getInt(char arg) {
         return IntegerArgumentMarshaler.getValue(marshalers.get(arg));
     }
+
+    @Override
+    public double getDouble(char arg) {
+        return 0;
+    }
 }
