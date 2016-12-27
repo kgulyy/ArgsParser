@@ -6,6 +6,8 @@ package com.objectmentor.utilities.args;
 @SuppressWarnings("WeakerAccess")
 public interface Args {
 
+    int cardinality();
+
     boolean has(char arg);
 
     boolean getBoolean(char arg);

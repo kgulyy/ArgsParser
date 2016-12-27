@@ -4,50 +4,34 @@ import com.objectmentor.utilities.args.exception.ArgsException;
 
 import java.util.*;
 
+import static com.objectmentor.utilities.args.exception.ErrorCode.*;
+
 /**
  * Created by KGuly on 22.12.2016.
  */
 public class ArgsCleanCode implements Args {
     private String schema;
-    //private String[] args;
-    private boolean valid = true;
-    private Set<Character> unexpectedArguments = new TreeSet<>();
     private Map<Character, ArgumentMarshaler> marshalers = new HashMap<>();
     private Set<Character> argsFound = new HashSet<>();
     private Iterator<String> currentArgument;
-    private char errorArgumentId = '\0';
-    private String errorParameter = "TILT";
-    private ErrorCode errorCode = ErrorCode.OK;
     private List<String> argsList;
-
-    private enum ErrorCode {
-        OK, UNEXPECTED_ARGUMENT,
-        MISSING_STRING,
-        MISSING_INTEGER, INVALID_INTEGER,
-        MISSING_DOUBLE, INVALID_DOUBLE
-    }
 
     @SuppressWarnings("WeakerAccess")
     public ArgsCleanCode(String schema, String[] args) throws ArgsException {
         this.schema = schema;
         argsList = Arrays.asList(args);
-        valid = parse();
+        parse();
     }
 
-    private boolean parse() throws ArgsException {
-        if (schema.length() == 0 && argsList.size() == 0)
-            return true;
+    private void parse() throws ArgsException {
         parseSchema();
         parseArguments();
-
-        return valid;
     }
 
     private boolean parseSchema() throws ArgsException {
         for (String element : schema.split(",")) {
             if (element.length() > 0) {
-                String trimmedElement = element.trim();
-                parseSchemaElement(trimmedElement);
+                parseSchemaElement(element.trim());
             }
         }
         return true;
@@ -55,8 +39,8 @@ public class ArgsCleanCode implements Args {
 
     private void parseSchemaElement(String element) throws ArgsException {
         char elementId = element.charAt(0);
-        String elementTail = element.substring(1);
         validateSchemaElementId(elementId);
+        String elementTail = element.substring(1);
         if (elementTail.isEmpty())
             marshalers.put(elementId, new BooleanArgumentMarshaler());
         else if (elementTail.equals("*"))
@@ -66,21 +50,20 @@ public class ArgsCleanCode implements Args {
         else if (elementTail.equals("##"))
             marshalers.put(elementId, new DoubleArgumentMarshaler());
         else
-            throw new ArgsException(String.format("Argument: %c has invalid format: %s.", elementId, elementTail));
+            throw new ArgsException(INVALID_ARGUMENT_FORMAT, elementId, elementTail);
     }
 
     private void validateSchemaElementId(char elementId) throws ArgsException {
         if (!Character.isLetter(elementId)) {
-            throw new ArgsException("Bad character:" + elementId + "in Args format: " + schema);
+            throw new ArgsException(INVALID_ARGUMENT_NAME, elementId);
         }
     }
 
-    private boolean parseArguments() throws ArgsException {
+    private void parseArguments() throws ArgsException {
         for (currentArgument = argsList.iterator(); currentArgument.hasNext();) {
             String arg = currentArgument.next();
             parseArgument(arg);
         }
-        return true;
     }
 
     private void parseArgument(String arg) throws ArgsException {
@@ -99,10 +82,7 @@ public class ArgsCleanCode implements Args {
         if (setArgument(argChar)) {
             argsFound.add(argChar);
         } else {
-            unexpectedArguments.add(argChar);
-            errorCode = ErrorCode.UNEXPECTED_ARGUMENT;
-            valid = false;
-            throw new ArgsException();
+            throw new ArgsException(UNEXPECTED_ARGUMENT, argChar);
         }
     }
 
@@ -113,15 +93,14 @@ public class ArgsCleanCode implements Args {
         try {
             m.set(currentArgument);
         } catch (ArgsException e) {
-            valid = false;
-            errorArgumentId = argChar;
+            e.setErrorArgumentId(argChar);
             throw e;
         }
 
         return true;
     }
 
-    @SuppressWarnings("unused")
+    @Override
     public int cardinality() {
         return argsFound.size();
     }
@@ -132,42 +111,6 @@ public class ArgsCleanCode implements Args {
             return "-[" + schema + "]";
         else
             return "";
-    }
-
-    @SuppressWarnings("unused")
-    public String errorMessage() throws Exception {
-        switch (errorCode) {
-            case OK:
-                throw new Exception("TILT: Should not get here");
-            case UNEXPECTED_ARGUMENT:
-                return unexpectedArgumentMessage();
-            case MISSING_STRING:
-                return String.format("Could not find string parameter for -%c", errorArgumentId);
-            case INVALID_INTEGER:
-                return String.format("Argument -%c expects an integer but was '%s'", errorArgumentId, errorParameter);
-            case MISSING_INTEGER:
-                return String.format("Could not find integer parameter for -%c.", errorArgumentId);
-            case INVALID_DOUBLE:
-                return String.format("Argument -%c expects a double but was '%s'", errorArgumentId, errorParameter);
-            case MISSING_DOUBLE:
-                return String.format("Could not find double parameter for -%c.", errorArgumentId);
-        }
-        return "";
-    }
-
-    private String unexpectedArgumentMessage() {
-        StringBuilder message = new StringBuilder("Argument(s) -");
-        for (char c : unexpectedArguments) {
-            message.append(c);
-        }
-        message.append(" unexpected.");
-
-        return message.toString();
-    }
-
-    @SuppressWarnings("unused")
-    public boolean isValid() {
-        return valid;
     }
 
     @Override
@@ -244,8 +187,7 @@ public class ArgsCleanCode implements Args {
             try {
                 stringValue = currentArgument.next();
             } catch (NoSuchElementException e) {
-                errorCode = ErrorCode.MISSING_STRING;
-                throw new ArgsException();
+                throw new ArgsException(MISSING_STRING);
             }
         }
 
@@ -265,12 +207,9 @@ public class ArgsCleanCode implements Args {
                 parameter = currentArgument.next();
                 intValue = Integer.parseInt(parameter);
             } catch (NoSuchElementException e) {
-                errorCode = ErrorCode.MISSING_INTEGER;
-                throw new ArgsException();
+                throw new ArgsException(MISSING_INTEGER);
             } catch (NumberFormatException e) {
-                errorParameter = parameter;
-                errorCode = ErrorCode.INVALID_INTEGER;
-                throw new ArgsException();
+                throw new ArgsException(INVALID_INTEGER, parameter);
             }
         }
 
@@ -290,12 +229,9 @@ public class ArgsCleanCode implements Args {
                 parameter = currentArgument.next();
                 doubleValue = Double.parseDouble(parameter);
             } catch (NoSuchElementException e) {
-                errorCode = ErrorCode.MISSING_DOUBLE;
-                throw new ArgsException();
+                throw new ArgsException(MISSING_DOUBLE);
             } catch (NumberFormatException e) {
-                errorParameter = parameter;
-                errorCode = ErrorCode.INVALID_DOUBLE;
-                throw new ArgsException();
+                throw new ArgsException(INVALID_DOUBLE, parameter);
             }
         }
 

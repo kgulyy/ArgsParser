@@ -82,6 +82,11 @@ public class ArgsImpl implements Args {
     }
 
     @Override
+    public int cardinality() {
+        return 0;
+    }
+
+    @Override
     public boolean has(char arg) {
         return argsFound.contains(arg);
     }

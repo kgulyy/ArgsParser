@@ -1,12 +1,10 @@
 package com.objectmentor.utilities.args.exception;
 
-import static com.objectmentor.utilities.args.exception.ErrorCode.OK;
-
 /**
  * Created by KGuly on 21.12.2016.
  */
 public class ArgsException extends Exception {
-    private ErrorCode errorCode = OK;
+    private ErrorCode errorCode = ErrorCode.OK;
     private char errorArgumentId = '\0';
     private String errorParameter = null;
 
@@ -81,8 +79,12 @@ public class ArgsException extends Exception {
                 return String.format("Argument -%c expects an integer but was '%s'.", errorArgumentId, errorParameter);
             case MISSING_INTEGER:
                 return String.format("Could not find integer parameter for -%c.", errorArgumentId);
+            case INVALID_DOUBLE:
+                return String.format("Argument -%c expects a double but was '%s'.", errorArgumentId, errorParameter);
+            case MISSING_DOUBLE:
+                return String.format("Could not find double parameter for -%c.", errorArgumentId);
             case INVALID_ARGUMENT_NAME:
-                return String.format("'%s' is not a valid argument name.", errorArgumentId);
+                return String.format("'%c' is not a valid argument name.", errorArgumentId);
             case INVALID_ARGUMENT_FORMAT:
                 return String.format("'%s' is not a valid argument format.", errorParameter);
             default:
