@@ -244,7 +244,7 @@ public class ArgsImplTest {
         assertThat(argC, is(testArgC));
     }
 
-    @Test @Ignore
+    @Test
     public void getDouble_Positive_DoublePresent() throws ArgsException {
         String schema = "x##";
         String[] arguments = {"-x", String.valueOf(TEST_DOUBLE)};
@@ -255,7 +255,7 @@ public class ArgsImplTest {
         assertThat(TEST_DOUBLE, is(argD));
     }
 
-    @Test @Ignore
+    @Test
     public void getDouble_Negative_MissingDouble() {
         String schema = "d##";
         String[] arguments = {"-d"};
@@ -267,7 +267,7 @@ public class ArgsImplTest {
         }
     }
 
-    @Test @Ignore
+    @Test
     public void getDouble_Negative_InvalidDouble() {
         String schema = "d##";
         String[] arguments = {"-d", TEST_STRING};

@@ -37,6 +37,8 @@ public class ArgsImpl implements Args {
             marshalers.put(elementId, new StringArgumentMarshaler());
         else if (elementTail.equals("#"))
             marshalers.put(elementId, new IntegerArgumentMarshaler());
+        else if (elementTail.equals("##"))
+            marshalers.put(elementId, new DoubleArgumentMarshaler());
         else
             throw new ArgsException(INVALID_ARGUMENT_FORMAT, elementId, elementTail);
 
@@ -103,6 +105,6 @@ public class ArgsImpl implements Args {
 
     @Override
     public double getDouble(char arg) {
-        return 0;
+        return DoubleArgumentMarshaler.getValue(marshalers.get(arg));
     }
 }
