@@ -1,9 +1,11 @@
 package com.objectmentor.utilities.args;
 
 import com.objectmentor.utilities.args.exception.ArgsException;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
+import static com.objectmentor.utilities.args.exception.ErrorCode.*;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
 /**
@@ -12,44 +14,84 @@ import static org.junit.Assert.*;
 public class ArgsImplTest {
     private static final String TEST_STRING = "TestString";
     private static final int TEST_INT = 124;
+    private static final double TEST_DOUBLE= 75.45;
 
-    @SuppressWarnings("unused")
-    public void test_negative_pattern() {
-        String schema = "1";
-        String[] arguments = {"-1"};
+    @Test
+    public void constructor_Positive_WithNoSchemaOrArgument() throws ArgsException {
+        String schema = "";
+        String[] arguments = {};
 
-        String errorMessage = "";
+        Args args = new ArgsImpl(schema, arguments);
+        int countArgs = args.cardinality();
+
+        assertEquals(0, countArgs);
+    }
+
+    @Test
+    public void constructor_Negative_WithNoSchemaButWithOneArgument() {
+        String schema = "";
+        String[] arguments = {"-a"};
+
         try {
             new ArgsImpl(schema, arguments);
         } catch (ArgsException e) {
-            errorMessage = e.getMessage();
+            assertEquals(UNEXPECTED_ARGUMENT, e.getErrorCode());
+            assertEquals('a', e.getErrorArgumentId());
         }
-
-        assertThat(errorMessage, is("'1' is not a valid argument name."));
     }
 
-    @Test(expected = ArgsException.class)
-    public void constructor_Negative_InvalidArgumentName() throws ArgsException {
-        String schema = "1";
-        String[] arguments = {"-1"};
+    @Test
+    public void constructor_Negative_WithNoSchemaButWithMultipleArguments() {
+        String schema = "";
+        String[] arguments = {"-a", "-b"};
 
-        new ArgsImpl(schema, arguments);
+        try {
+            new ArgsImpl(schema, arguments);
+        } catch (ArgsException e) {
+            assertEquals(UNEXPECTED_ARGUMENT, e.getErrorCode());
+            assertEquals('a', e.getErrorArgumentId());
+        }
     }
 
-    @Test(expected = ArgsException.class)
-    public void constructor_Negative_InvalidArgumentFormat() throws ArgsException {
-        String schema = "a@";
-        String[] arguments = {"-a@"};
+    @Test
+    public void constructor_Negative_NonLetterSchema() {
+        String schema = "*";
+        String[] arguments = {};
 
-        new ArgsImpl(schema, arguments);
+        try {
+            new ArgsImpl(schema, arguments);
+        } catch (ArgsException e) {
+            assertEquals(INVALID_ARGUMENT_NAME, e.getErrorCode());
+            assertEquals('*', e.getErrorArgumentId());
+        }
     }
 
-    @Test(expected = ArgsException.class)
-    public void constructor_Negative_UnexpectedArgument() throws ArgsException {
-        String schema = "a";
-        String[] arguments = {"-b"};
+    @Test
+    public void constructor_Negative_InvalidArgumentFormat() {
+        String schema = "a~";
+        String[] arguments = {"-a~"};
 
-        new ArgsImpl(schema, arguments);
+        try {
+            new ArgsImpl(schema, arguments);
+        } catch (ArgsException e) {
+            assertEquals(INVALID_ARGUMENT_FORMAT, e.getErrorCode());
+            assertEquals('a', e.getErrorArgumentId());
+        }
+    }
+
+    @Test
+    public void constructor_Positive_SpaceInSchema() throws ArgsException {
+        String schema = " x , y ";
+        String[] arguments = {"-xy"};
+
+        Args args = new ArgsImpl(schema, arguments);
+        int countArgs = args.cardinality();
+        boolean hasX = args.has('x');
+        boolean hasY = args.has('y');
+
+        assertEquals(2, countArgs);
+        assertTrue(hasX);
+        assertTrue(hasY);
     }
 
     @Test
@@ -109,32 +151,19 @@ public class ArgsImplTest {
 
     @Test
     public void getBoolean_Positive_MultipleArgs() throws ArgsException {
-        String schema = "a,b,c,d";
-        String[] arguments = {"-db"};
+        String schema = "a,b";
+        String[] arguments = {"-b"};
         Args args = new ArgsImpl(schema, arguments);
 
         boolean argA = args.getBoolean('a');
         boolean argB = args.getBoolean('b');
-        boolean argC = args.getBoolean('c');
-        boolean argD = args.getBoolean('d');
 
         assertFalse(argA);
         assertTrue(argB);
-        assertFalse(argC);
-        assertTrue(argD);
-    }
-
-    @Test(expected = ArgsException.class)
-    public void getString_Negative_MissingString() throws ArgsException {
-        String schema = "s*";
-        String[] arguments = {"-s"};
-        Args args = new ArgsImpl(schema, arguments);
-
-        args.getString('s');
     }
 
     @Test
-    public void getString_Positive_TestStringReturned() throws ArgsException {
+    public void getString_Positive_StringPresent() throws ArgsException {
         String schema = "s*";
         String[] arguments = {"-s", TEST_STRING};
         Args args = new ArgsImpl(schema, arguments);
@@ -161,26 +190,8 @@ public class ArgsImplTest {
         assertThat(argC, is(""));
     }
 
-    @Test(expected = ArgsException.class)
-    public void getInt_Negative_MissingInteger() throws ArgsException {
-        String schema = "i#";
-        String[] arguments = {"-i"};
-        Args args = new ArgsImpl(schema, arguments);
-
-        args.getInt('i');
-    }
-
-    @Test(expected = ArgsException.class)
-    public void getInt_Negative_InvalidInteger() throws ArgsException {
-        String schema = "i#";
-        String[] arguments = {"-i", TEST_STRING};
-        Args args = new ArgsImpl(schema, arguments);
-
-        args.getInt('i');
-    }
-
     @Test
-    public void getInt_Positive_TestIntReturned() throws ArgsException {
+    public void getInt_Positive_IntegerPresent() throws ArgsException {
         String schema = "i#";
         String[] arguments = {"-i", String.valueOf(TEST_INT)};
         Args args = new ArgsImpl(schema, arguments);
@@ -188,6 +199,32 @@ public class ArgsImplTest {
         int argI = args.getInt('i');
 
         assertThat(argI, is(TEST_INT));
+    }
+
+    @Test
+    public void getInt_Negative_MissingInteger() {
+        String schema = "i#";
+        String[] arguments = {"-i"};
+
+        try {
+            new ArgsImpl(schema, arguments);
+        } catch (ArgsException e) {
+            assertEquals(MISSING_INTEGER, e.getErrorCode());
+            assertEquals('i', e.getErrorArgumentId());
+        }
+    }
+
+    @Test
+    public void getInt_Negative_InvalidInteger() {
+        String schema = "i#";
+        String[] arguments = {"-i", TEST_STRING};
+
+        try {
+            new ArgsImpl(schema, arguments);
+        } catch (ArgsException e) {
+            assertEquals(INVALID_INTEGER, e.getErrorCode());
+            assertEquals('i', e.getErrorArgumentId());
+        }
     }
 
     @Test
@@ -205,6 +242,42 @@ public class ArgsImplTest {
         assertThat(argA, is(testArgA));
         assertThat(argB, is(0));
         assertThat(argC, is(testArgC));
+    }
+
+    @Test @Ignore
+    public void getDouble_Positive_DoublePresent() throws ArgsException {
+        String schema = "x##";
+        String[] arguments = {"-x", String.valueOf(TEST_DOUBLE)};
+        Args args = new ArgsImpl(schema, arguments);
+
+        double argD = args.getDouble('x');
+
+        assertThat(TEST_DOUBLE, is(argD));
+    }
+
+    @Test @Ignore
+    public void getDouble_Negative_MissingDouble() {
+        String schema = "d##";
+        String[] arguments = {"-d"};
+        try {
+            new ArgsImpl(schema, arguments);
+        } catch (ArgsException e) {
+            assertEquals(MISSING_DOUBLE, e.getErrorCode());
+            assertEquals('d', e.getErrorArgumentId());
+        }
+    }
+
+    @Test @Ignore
+    public void getDouble_Negative_InvalidDouble() {
+        String schema = "d##";
+        String[] arguments = {"-d", TEST_STRING};
+
+        try {
+            new ArgsImpl(schema, arguments);
+        } catch (ArgsException e) {
+            assertEquals(INVALID_DOUBLE, e.getErrorCode());
+            assertEquals('d', e.getErrorArgumentId());
+        }
     }
 
     @Test

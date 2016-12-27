@@ -76,14 +76,9 @@ public class ArgsImpl implements Args {
         }
     }
 
-    @SuppressWarnings("unused")
-    public int nextArgument() {
-        return currentArgument.nextIndex();
-    }
-
     @Override
     public int cardinality() {
-        return 0;
+        return argsFound.size();
     }
 
     @Override
