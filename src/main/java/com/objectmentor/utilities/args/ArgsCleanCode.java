@@ -10,31 +10,24 @@ import static com.objectmentor.utilities.args.exception.ErrorCode.*;
  * Created by KGuly on 22.12.2016.
  */
 public class ArgsCleanCode implements Args {
-    private String schema;
-    private Map<Character, ArgumentMarshaler> marshalers = new HashMap<>();
-    private Set<Character> argsFound = new HashSet<>();
+    private Map<Character, ArgumentMarshaler> marshalers;
+    private Set<Character> argsFound;
     private Iterator<String> currentArgument;
-    private List<String> argsList;
 
     @SuppressWarnings("WeakerAccess")
     public ArgsCleanCode(String schema, String[] args) throws ArgsException {
-        this.schema = schema;
-        argsList = Arrays.asList(args);
-        parse();
+        marshalers = new HashMap<>();
+        argsFound = new HashSet<>();
+        parseSchema(schema);
+        parseArguments(Arrays.asList(args));
     }
 
-    private void parse() throws ArgsException {
-        parseSchema();
-        parseArguments();
-    }
-
-    private boolean parseSchema() throws ArgsException {
+    private void parseSchema(String schema) throws ArgsException {
         for (String element : schema.split(",")) {
             if (element.length() > 0) {
                 parseSchemaElement(element.trim());
             }
         }
-        return true;
     }
 
     private void parseSchemaElement(String element) throws ArgsException {
@@ -59,58 +52,39 @@ public class ArgsCleanCode implements Args {
         }
     }
 
-    private void parseArguments() throws ArgsException {
-        for (currentArgument = argsList.iterator(); currentArgument.hasNext();) {
+    private void parseArguments(List<String> argList) throws ArgsException {
+        for (currentArgument = argList.iterator(); currentArgument.hasNext();) {
             String arg = currentArgument.next();
-            parseArgument(arg);
+            if (arg.startsWith("-")) {
+                parseArgumentCharacters(arg.substring(1));
+            }
         }
     }
 
-    private void parseArgument(String arg) throws ArgsException {
-        if (arg.startsWith("-")) {
-            parseElements(arg);
+    private void parseArgumentCharacters(String arg) throws ArgsException {
+        for (int i = 0; i < arg.length(); i++) {
+            parseArgumentCharacter(arg.charAt(i));
         }
     }
 
-    private void parseElements(String arg) throws ArgsException {
-        for (int i = 1; i < arg.length(); i++) {
-            parseElement(arg.charAt(i));
-        }
-    }
-
-    private void parseElement(char argChar) throws ArgsException {
-        if (setArgument(argChar)) {
-            argsFound.add(argChar);
-        } else {
-            throw new ArgsException(UNEXPECTED_ARGUMENT, argChar);
-        }
-    }
-
-    private boolean setArgument(char argChar) throws ArgsException {
+    private void parseArgumentCharacter(char argChar) throws ArgsException {
         ArgumentMarshaler m = marshalers.get(argChar);
         if (m == null)
-            return false;
-        try {
-            m.set(currentArgument);
-        } catch (ArgsException e) {
-            e.setErrorArgumentId(argChar);
-            throw e;
+            throw new ArgsException(UNEXPECTED_ARGUMENT, argChar);
+        else {
+            argsFound.add(argChar);
+            try {
+                m.set(currentArgument);
+            } catch (ArgsException e) {
+                e.setErrorArgumentId(argChar);
+                throw e;
+            }
         }
-
-        return true;
     }
 
     @Override
     public int cardinality() {
         return argsFound.size();
-    }
-
-    @SuppressWarnings("unused")
-    public String usage() {
-        if (schema.length() > 0)
-            return "-[" + schema + "]";
-        else
-            return "";
     }
 
     @Override
