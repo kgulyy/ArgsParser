@@ -53,7 +53,7 @@ public class ArgsCleanCode implements Args {
     }
 
     private void parseArguments(List<String> argList) throws ArgsException {
-        for (currentArgument = argList.iterator(); currentArgument.hasNext();) {
+        for (currentArgument = argList.iterator(); currentArgument.hasNext(); ) {
             String arg = currentArgument.next();
             if (arg.startsWith("-")) {
                 parseArgumentCharacters(arg.substring(1));
@@ -136,6 +136,7 @@ public class ArgsCleanCode implements Args {
 
     private interface ArgumentMarshaler {
         void set(Iterator<String> currentArgument) throws ArgsException;
+
         Object get();
     }
 
@@ -143,7 +144,7 @@ public class ArgsCleanCode implements Args {
         private boolean booleanValue = false;
 
         @Override
-        public void set(Iterator<String> currentArgument) throws ArgsException {
+        public void set(Iterator<String> currentArgument) {
             booleanValue = true;
         }
 

@@ -50,7 +50,7 @@ public class ArgsImpl implements Args {
     }
 
     private void parseArgumentStrings(List<String> argList) throws ArgsException {
-        for (currentArgument = argList.listIterator(); currentArgument.hasNext();) {
+        for (currentArgument = argList.listIterator(); currentArgument.hasNext(); ) {
             String argString = currentArgument.next();
             if (argString.startsWith("-")) {
                 parseArgumentCharacters(argString.substring(1));
@@ -59,8 +59,8 @@ public class ArgsImpl implements Args {
     }
 
     private void parseArgumentCharacters(String argChars) throws ArgsException {
-     for (int i = 0; i < argChars.length(); i++)
-         parseArgumentCharacter(argChars.charAt(i));
+        for (int i = 0; i < argChars.length(); i++)
+            parseArgumentCharacter(argChars.charAt(i));
     }
 
     private void parseArgumentCharacter(char argChar) throws ArgsException {

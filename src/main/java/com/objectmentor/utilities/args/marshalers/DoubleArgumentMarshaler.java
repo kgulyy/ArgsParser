@@ -5,7 +5,8 @@ import com.objectmentor.utilities.args.exception.ArgsException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import static com.objectmentor.utilities.args.exception.ErrorCode.*;
+import static com.objectmentor.utilities.args.exception.ErrorCode.INVALID_DOUBLE;
+import static com.objectmentor.utilities.args.exception.ErrorCode.MISSING_DOUBLE;
 
 /**
  * Created by KGuly on 27.12.2016.
@@ -27,7 +28,7 @@ public class DoubleArgumentMarshaler implements ArgumentMarshaler {
     }
 
     public static double getValue(ArgumentMarshaler am) {
-        if(am != null && am instanceof DoubleArgumentMarshaler)
+        if (am != null && am instanceof DoubleArgumentMarshaler)
             return ((DoubleArgumentMarshaler) am).doubleValue;
         else
             return 0;

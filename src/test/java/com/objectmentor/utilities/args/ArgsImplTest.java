@@ -1,7 +1,6 @@
 package com.objectmentor.utilities.args;
 
 import com.objectmentor.utilities.args.exception.ArgsException;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static com.objectmentor.utilities.args.exception.ErrorCode.*;
@@ -14,7 +13,7 @@ import static org.junit.Assert.*;
 public class ArgsImplTest {
     private static final String TEST_STRING = "TestString";
     private static final int TEST_INT = 124;
-    private static final double TEST_DOUBLE= 75.45;
+    private static final double TEST_DOUBLE = 75.45;
 
     @Test
     public void constructor_Positive_WithNoSchemaOrArgument() throws ArgsException {

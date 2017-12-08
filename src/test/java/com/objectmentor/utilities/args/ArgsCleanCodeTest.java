@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 public class ArgsCleanCodeTest {
     private static final String TEST_STRING = "TestString";
     private static final int TEST_INT = 124;
-    private static final double TEST_DOUBLE= 75.45;
+    private static final double TEST_DOUBLE = 75.45;
 
     @Test
     public void constructor_Positive_WithNoSchemaOrArgument() throws ArgsException {

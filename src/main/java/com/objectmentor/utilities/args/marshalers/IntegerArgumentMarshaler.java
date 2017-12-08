@@ -5,7 +5,8 @@ import com.objectmentor.utilities.args.exception.ArgsException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import static com.objectmentor.utilities.args.exception.ErrorCode.*;
+import static com.objectmentor.utilities.args.exception.ErrorCode.INVALID_INTEGER;
+import static com.objectmentor.utilities.args.exception.ErrorCode.MISSING_INTEGER;
 
 /**
  * Created by KGuly on 21.12.2016.
@@ -27,7 +28,7 @@ public class IntegerArgumentMarshaler implements ArgumentMarshaler {
     }
 
     public static int getValue(ArgumentMarshaler am) {
-        if(am != null && am instanceof IntegerArgumentMarshaler)
+        if (am != null && am instanceof IntegerArgumentMarshaler)
             return ((IntegerArgumentMarshaler) am).intValue;
         else
             return 0;
