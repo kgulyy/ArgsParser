@@ -1,27 +1,24 @@
-package com.objectmentor.utilities.args;
+package com.kgulyy.args;
 
-import com.objectmentor.utilities.args.exception.ArgsException;
+import com.kgulyy.args.exception.ParserException;
 import org.junit.Test;
 
-import static com.objectmentor.utilities.args.exception.ErrorCode.*;
-import static org.hamcrest.CoreMatchers.is;
+import static com.kgulyy.args.exception.ErrorCode.*;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
-/**
- * Created by KGuly on 23.12.2016.
- */
-public class ArgsCleanCodeTest {
+public class ArgumentsParserTest {
     private static final String TEST_STRING = "TestString";
     private static final int TEST_INT = 124;
     private static final double TEST_DOUBLE = 75.45;
 
     @Test
-    public void constructor_Positive_WithNoSchemaOrArgument() throws ArgsException {
+    public void constructor_Positive_WithNoSchemaOrArgument() throws ParserException {
         String schema = "";
         String[] arguments = {};
 
-        Args args = new ArgsCleanCode(schema, arguments);
-        int countArgs = args.cardinality();
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
+        int countArgs = parser.cardinality();
 
         assertEquals(0, countArgs);
     }
@@ -32,8 +29,8 @@ public class ArgsCleanCodeTest {
         String[] arguments = {"-a"};
 
         try {
-            new ArgsCleanCode(schema, arguments);
-        } catch (ArgsException e) {
+            new ArgumentsParser(schema, arguments);
+        } catch (ParserException e) {
             assertEquals(UNEXPECTED_ARGUMENT, e.getErrorCode());
             assertEquals('a', e.getErrorArgumentId());
         }
@@ -45,8 +42,8 @@ public class ArgsCleanCodeTest {
         String[] arguments = {"-a", "-b"};
 
         try {
-            new ArgsCleanCode(schema, arguments);
-        } catch (ArgsException e) {
+            new ArgumentsParser(schema, arguments);
+        } catch (ParserException e) {
             assertEquals(UNEXPECTED_ARGUMENT, e.getErrorCode());
             assertEquals('a', e.getErrorArgumentId());
         }
@@ -58,8 +55,8 @@ public class ArgsCleanCodeTest {
         String[] arguments = {};
 
         try {
-            new ArgsCleanCode(schema, arguments);
-        } catch (ArgsException e) {
+            new ArgumentsParser(schema, arguments);
+        } catch (ParserException e) {
             assertEquals(INVALID_ARGUMENT_NAME, e.getErrorCode());
             assertEquals('*', e.getErrorArgumentId());
         }
@@ -71,22 +68,22 @@ public class ArgsCleanCodeTest {
         String[] arguments = {"-a~"};
 
         try {
-            new ArgsCleanCode(schema, arguments);
-        } catch (ArgsException e) {
+            new ArgumentsParser(schema, arguments);
+        } catch (ParserException e) {
             assertEquals(INVALID_ARGUMENT_FORMAT, e.getErrorCode());
             assertEquals('a', e.getErrorArgumentId());
         }
     }
 
     @Test
-    public void constructor_Positive_SpaceInSchema() throws ArgsException {
+    public void constructor_Positive_SpaceInSchema() throws ParserException {
         String schema = " x , y ";
         String[] arguments = {"-xy"};
 
-        Args args = new ArgsCleanCode(schema, arguments);
-        int countArgs = args.cardinality();
-        boolean hasX = args.has('x');
-        boolean hasY = args.has('y');
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
+        int countArgs = parser.cardinality();
+        boolean hasX = parser.has('x');
+        boolean hasY = parser.has('y');
 
         assertEquals(2, countArgs);
         assertTrue(hasX);
@@ -94,95 +91,95 @@ public class ArgsCleanCodeTest {
     }
 
     @Test
-    public void constructor_Positive_ValueBeforeArgument() throws ArgsException {
-        String schema = "i#";
-        String[] arguments = {TEST_STRING, "-i", String.valueOf(TEST_INT)};
-        Args args = new ArgsCleanCode(schema, arguments);
+    public void constructor_Positive_ValueBeforeArgument() throws ParserException {
+        String schema = "i#, a";
+        String[] arguments = {TEST_STRING, "-i", String.valueOf(TEST_INT), "-a"};
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        int argI = args.getInt('i');
+        int argI = parser.getInt('i');
 
         assertThat(argI, is(TEST_INT));
     }
 
     @Test
-    public void has_Positive_TrueReturned() throws ArgsException {
+    public void has_Positive_TrueReturned() throws ParserException {
         String schema = "t";
         String[] arguments = {"-t"};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        boolean hasArg = args.has('t');
+        boolean hasArg = parser.has('t');
 
         assertTrue(hasArg);
     }
 
     @Test
-    public void has_Positive_FalseReturned() throws ArgsException {
+    public void has_Positive_FalseReturned() throws ParserException {
         String schema = "f";
         String[] arguments = {};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        boolean hasArg = args.has('f');
+        boolean hasArg = parser.has('f');
 
         assertFalse(hasArg);
     }
 
     @Test
-    public void getBoolean_Positive_TrueReturned() throws ArgsException {
+    public void getBoolean_Positive_TrueReturned() throws ParserException {
         String schema = "t";
         String[] arguments = {"-t"};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        boolean argT = args.getBoolean('t');
+        boolean argT = parser.getBoolean('t');
 
         assertTrue(argT);
     }
 
     @Test
-    public void getBoolean_Positive_FalseReturned() throws ArgsException {
+    public void getBoolean_Positive_FalseReturned() throws ParserException {
         String schema = "f";
         String[] arguments = {};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        boolean argF = args.getBoolean('f');
+        boolean argF = parser.getBoolean('f');
 
         assertFalse(argF);
     }
 
     @Test
-    public void getBoolean_Positive_MultipleArgs() throws ArgsException {
+    public void getBoolean_Positive_MultipleArgs() throws ParserException {
         String schema = "a,b";
         String[] arguments = {"-b"};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        boolean argA = args.getBoolean('a');
-        boolean argB = args.getBoolean('b');
+        boolean argA = parser.getBoolean('a');
+        boolean argB = parser.getBoolean('b');
 
         assertFalse(argA);
         assertTrue(argB);
     }
 
     @Test
-    public void getString_Positive_StringPresent() throws ArgsException {
+    public void getString_Positive_StringPresent() throws ParserException {
         String schema = "s*";
         String[] arguments = {"-s", TEST_STRING};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        String argS = args.getString('s');
+        String argS = parser.getString('s');
 
         assertThat(argS, is(TEST_STRING));
     }
 
     @Test
-    public void getString_Positive_MultipleArgs() throws ArgsException {
+    public void getString_Positive_MultipleArgs() throws ParserException {
         String schema = "a*,b*,c*";
         final String testArgA = "TestArgA";
         final String testArgB = "TestArgB";
         String[] arguments = {"-ba", testArgB, testArgA};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        String argA = args.getString('a');
-        String argB = args.getString('b');
-        String argC = args.getString('c');
+        String argA = parser.getString('a');
+        String argB = parser.getString('b');
+        String argC = parser.getString('c');
 
         assertThat(argA, is(testArgA));
         assertThat(argB, is(testArgB));
@@ -190,12 +187,12 @@ public class ArgsCleanCodeTest {
     }
 
     @Test
-    public void getInt_Positive_IntegerPresent() throws ArgsException {
+    public void getInt_Positive_IntegerPresent() throws ParserException {
         String schema = "i#";
         String[] arguments = {"-i", String.valueOf(TEST_INT)};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        int argI = args.getInt('i');
+        int argI = parser.getInt('i');
 
         assertThat(argI, is(TEST_INT));
     }
@@ -206,8 +203,8 @@ public class ArgsCleanCodeTest {
         String[] arguments = {"-i"};
 
         try {
-            new ArgsCleanCode(schema, arguments);
-        } catch (ArgsException e) {
+            new ArgumentsParser(schema, arguments);
+        } catch (ParserException e) {
             assertEquals(MISSING_INTEGER, e.getErrorCode());
             assertEquals('i', e.getErrorArgumentId());
         }
@@ -219,24 +216,24 @@ public class ArgsCleanCodeTest {
         String[] arguments = {"-i", TEST_STRING};
 
         try {
-            new ArgsCleanCode(schema, arguments);
-        } catch (ArgsException e) {
+            new ArgumentsParser(schema, arguments);
+        } catch (ParserException e) {
             assertEquals(INVALID_INTEGER, e.getErrorCode());
             assertEquals('i', e.getErrorArgumentId());
         }
     }
 
     @Test
-    public void getInt_Positive_MultipleArgs() throws ArgsException {
+    public void getInt_Positive_MultipleArgs() throws ParserException {
         String schema = "a#,b#,c#";
         final int testArgA = 158;
         final int testArgC = 84;
         String[] arguments = {"-ac", String.valueOf(testArgA), String.valueOf(testArgC)};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        int argA = args.getInt('a');
-        int argB = args.getInt('b');
-        int argC = args.getInt('c');
+        int argA = parser.getInt('a');
+        int argB = parser.getInt('b');
+        int argC = parser.getInt('c');
 
         assertThat(argA, is(testArgA));
         assertThat(argB, is(0));
@@ -244,12 +241,12 @@ public class ArgsCleanCodeTest {
     }
 
     @Test
-    public void getDouble_Positive_DoublePresent() throws ArgsException {
+    public void getDouble_Positive_DoublePresent() throws ParserException {
         String schema = "x##";
         String[] arguments = {"-x", String.valueOf(TEST_DOUBLE)};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        double argD = args.getDouble('x');
+        double argD = parser.getDouble('x');
 
         assertThat(TEST_DOUBLE, is(argD));
     }
@@ -259,8 +256,8 @@ public class ArgsCleanCodeTest {
         String schema = "d##";
         String[] arguments = {"-d"};
         try {
-            new ArgsCleanCode(schema, arguments);
-        } catch (ArgsException e) {
+            new ArgumentsParser(schema, arguments);
+        } catch (ParserException e) {
             assertEquals(MISSING_DOUBLE, e.getErrorCode());
             assertEquals('d', e.getErrorArgumentId());
         }
@@ -272,26 +269,26 @@ public class ArgsCleanCodeTest {
         String[] arguments = {"-d", TEST_STRING};
 
         try {
-            new ArgsCleanCode(schema, arguments);
-        } catch (ArgsException e) {
+            new ArgumentsParser(schema, arguments);
+        } catch (ParserException e) {
             assertEquals(INVALID_DOUBLE, e.getErrorCode());
             assertEquals('d', e.getErrorArgumentId());
         }
     }
 
     @Test
-    public void getMultiValues_Positive_ComplexTest() throws ArgsException {
+    public void getMultiValues_Positive_ComplexTest() throws ParserException {
         String schema = "a,b*,c#,d,e*,f#";
         String[] arguments = {"-cab", String.valueOf(TEST_INT), TEST_STRING,
                 "-e", TEST_STRING, "-f", String.valueOf(TEST_INT)};
-        Args args = new ArgsCleanCode(schema, arguments);
+        ArgumentsParser parser = new ArgumentsParser(schema, arguments);
 
-        boolean argA = args.getBoolean('a');
-        String argB = args.getString('b');
-        int argC = args.getInt('c');
-        boolean argD = args.getBoolean('d');
-        String argE = args.getString('e');
-        int argF = args.getInt('f');
+        boolean argA = parser.getBoolean('a');
+        String argB = parser.getString('b');
+        int argC = parser.getInt('c');
+        boolean argD = parser.getBoolean('d');
+        String argE = parser.getString('e');
+        int argF = parser.getInt('f');
 
         assertThat(argA, is(true));
         assertThat(argB, is(TEST_STRING));

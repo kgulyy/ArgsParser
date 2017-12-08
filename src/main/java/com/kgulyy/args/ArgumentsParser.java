@@ -1,33 +1,33 @@
-package com.objectmentor.utilities.args;
+package com.kgulyy.args;
 
-import com.objectmentor.utilities.args.exception.ArgsException;
-import com.objectmentor.utilities.args.marshalers.*;
+import com.kgulyy.args.exception.ParserException;
+import com.kgulyy.args.marshalers.*;
 
 import java.util.*;
 
-import static com.objectmentor.utilities.args.exception.ErrorCode.*;
+import static com.kgulyy.args.exception.ErrorCode.*;
 
-public class ArgsImpl implements Args {
-    private Map<Character, ArgumentMarshaler> marshalers;
-    private Set<Character> argsFound;
+@SuppressWarnings("WeakerAccess")
+public class ArgumentsParser {
+    private final Map<Character, ArgumentMarshaler> marshalers;
+    private final Set<Character> argsFound;
     private ListIterator<String> currentArgument;
 
-    @SuppressWarnings("WeakerAccess")
-    public ArgsImpl(String schema, String[] args) throws ArgsException {
+    public ArgumentsParser(String schema, String[] args) throws ParserException {
         marshalers = new HashMap<>();
         argsFound = new HashSet<>();
         parseSchema(schema);
         parseArgumentStrings(Arrays.asList(args));
     }
 
-    private void parseSchema(String schema) throws ArgsException {
+    private void parseSchema(String schema) throws ParserException {
         for (String element : schema.split(",")) {
             if (element.length() > 0)
                 parseSchemaElement(element.trim());
         }
     }
 
-    private void parseSchemaElement(String element) throws ArgsException {
+    private void parseSchemaElement(String element) throws ParserException {
         char elementId = element.charAt(0);
         validateSchemaElementId(elementId);
         String elementTail = element.substring(1);
@@ -40,16 +40,16 @@ public class ArgsImpl implements Args {
         else if (elementTail.equals("##"))
             marshalers.put(elementId, new DoubleArgumentMarshaler());
         else
-            throw new ArgsException(INVALID_ARGUMENT_FORMAT, elementId, elementTail);
+            throw new ParserException(INVALID_ARGUMENT_FORMAT, elementId, elementTail);
 
     }
 
-    private void validateSchemaElementId(char elementId) throws ArgsException {
+    private void validateSchemaElementId(char elementId) throws ParserException {
         if (!Character.isLetter(elementId))
-            throw new ArgsException(INVALID_ARGUMENT_NAME, elementId);
+            throw new ParserException(INVALID_ARGUMENT_NAME, elementId);
     }
 
-    private void parseArgumentStrings(List<String> argList) throws ArgsException {
+    private void parseArgumentStrings(List<String> argList) throws ParserException {
         for (currentArgument = argList.listIterator(); currentArgument.hasNext(); ) {
             String argString = currentArgument.next();
             if (argString.startsWith("-")) {
@@ -58,52 +58,46 @@ public class ArgsImpl implements Args {
         }
     }
 
-    private void parseArgumentCharacters(String argChars) throws ArgsException {
+    private void parseArgumentCharacters(String argChars) throws ParserException {
         for (int i = 0; i < argChars.length(); i++)
             parseArgumentCharacter(argChars.charAt(i));
     }
 
-    private void parseArgumentCharacter(char argChar) throws ArgsException {
+    private void parseArgumentCharacter(char argChar) throws ParserException {
         ArgumentMarshaler m = marshalers.get(argChar);
         if (m == null) {
-            throw new ArgsException(UNEXPECTED_ARGUMENT, argChar);
+            throw new ParserException(UNEXPECTED_ARGUMENT, argChar);
         } else {
             argsFound.add(argChar);
             try {
                 m.set(currentArgument);
-            } catch (ArgsException e) {
+            } catch (ParserException e) {
                 e.setErrorArgumentId(argChar);
                 throw e;
             }
         }
     }
 
-    @Override
     public int cardinality() {
         return argsFound.size();
     }
 
-    @Override
     public boolean has(char arg) {
         return argsFound.contains(arg);
     }
 
-    @Override
     public boolean getBoolean(char arg) {
         return BooleanArgumentMarshaler.getValue(marshalers.get(arg));
     }
 
-    @Override
     public String getString(char arg) {
         return StringArgumentMarshaler.getValue(marshalers.get(arg));
     }
 
-    @Override
     public int getInt(char arg) {
         return IntegerArgumentMarshaler.getValue(marshalers.get(arg));
     }
 
-    @Override
     public double getDouble(char arg) {
         return DoubleArgumentMarshaler.getValue(marshalers.get(arg));
     }
